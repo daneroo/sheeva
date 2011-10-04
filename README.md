@@ -33,13 +33,13 @@ Talk to serial port with:
 -dirac:
 
     screen /dev/tty.usbserial-00002006B 115200
-    ctrl-a k to kiill screen session
+    # ctrl-a k to kiill screen session
 
 -goedel:
 
     screen /dev/ttyUSB2 115200
     screen /dev/ttyUSB1 115200
-    ctrl-a k to kiill screen session
+    # ctrl-a k to kiill screen session
 
 # Low level Install (uBoot, Debian installer)
 When we moved from the included Jaunty ubuntu distro to standard (maintained) debian, we had to install a new boot manager (uBoot)
@@ -54,11 +54,14 @@ We must note the ethaddress because it will be lost by this upgrade:
     ethaddr=00:50:43:01:D1:DB
 
 Use tftp rather than USB for uImage,uInitrd (uBoot, but we already did that)  
+
 -start tftp
+
     sudo scp u-boot.bin-3.4.19  /private/tftpboot/uboot.bin
     sudo /sbin/service tftp start
 
 -update uBoot tftp from dirac
+
     setenv ipaddr 192.168.3.250
     setenv serverip 192.168.3.140
     tftpboot 0x0800000 uboot.bin
@@ -184,7 +187,11 @@ Now set the boot
     reset
     
 ## Updating the kernel
+In the original instructions the debian installer was to skip installing the kernel, we did install it.
+In any case
+
 As we installed the nand flasshed kernel 2.6.32.45 does not match the debian installed version, so we will use thi `upgrade` to re-install the 2.6.32.5 kernel. This is the same method that would be used to update the kernel.
+
 
 You need to specify the version of the kernel to update to. e.g.:
 
