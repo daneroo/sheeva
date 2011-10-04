@@ -71,7 +71,8 @@ Use tftp rather than USB for uImage,uInitrd (uBoot, but we already did that)
     reset
 
 ## Install a new Kernel into Flash
-Get a kernel from sheeva.with-linux.com
+*Will redo this with 2.6.32.5 to match the version installed with debian installer*
+Get a kernel from sheeva.with-linux.com.
 
     wget http://sheeva.with-linux.com/sheeva/2.6/2.6.32/2.6.32.45/sheeva-2.6.32.45-uImage
     sudo scp sheeva-2.6.32.45-uImage /private/tftpboot
@@ -182,39 +183,52 @@ Now set the boot
     saveenv
     reset
     
-# Conguration (Software/Services)
+## Updating the kernel
+As we installed the nand flasshed kernel 2.6.32.45 does not match the debian installed version, so we will use thi `upgrade` to re-install the 2.6.32.5 kernel. This is the same method that would be used to update the kernel.
+
+You need to specify the version of the kernel to update to. e.g.:
+
+    wget http://sheeva.with-linux.com/sheeva/README-PLUG-UPDATE.sh
+    chmod +x README-PLUG-UPDATE.sh 
+    ./README-PLUG-UPDATE.sh 2.6.32.5 --nandkernel
+    
+After a reboot `uname` confirms: `Linux miraplug001 2.6.32.5 #1 PREEMPT`
+
+
+# Configuration (Software/Services)
 
 So as to not pollute the flash, we will remount the SD, and build node there!
 Remember /dev/mmcblk0p1 was /boot, /dev/mmcblk0p2 was /.
-`df` report 243M used before we start; 309M after build-essentials et al.
+`df` report 243M used before we start; 309M after build-essentials et al.; and 321M after node install
 
     mkdir /mnt
     mount /dev/mmcblk0p2 /mnt
     cd /mnt/home/daniel
 
 ## Install `node.js`:
-apt-get update
-apt-get install scons make build-essential libssl-dev curl
-cd /mnt/home/daniel
-wget http://nodejs.org/dist/node-v0.4.12.tar.gz
-tar zxvf node-v0.4.12.tar.gz
-cd node-v0.4.12
-nano +139 deps/v8/SConstruct
-'CCFLAGS':      ['$DIALECTFLAGS', '$WARNINGFLAGS', '-march=armv5t'],
+    apt-get update
+    apt-get install scons make build-essential libssl-dev curl
+    cd /mnt/home/daniel
+    wget http://nodejs.org/dist/node-v0.4.12.tar.gz
+    tar zxvf node-v0.4.12.tar.gz
+    cd node-v0.4.12
+    nano +139 deps/v8/SConstruct
+    'CCFLAGS':      ['$DIALECTFLAGS', '$WARNINGFLAGS', '-march=armv5t'],
 
-# worked took 40 minutes
-./configure
-make
-make install
+    # worked took 40 minutes
+    ./configure
+    make
+    make install
 
 ## Install `npm`
-apt-get install curl
-curl http://npmjs.org/install.sh | sh
+    apt-get install curl
+    curl http://npmjs.org/install.sh | sh
 
-uname -a; node --version; npm --version
-Linux miraplug001 2.6.32-5-kirkwood #1 Sat Sep 10 09:17:13 UTC 2011 armv5tel GNU/Linux
-v0.4.12
-1.0.30
+# Tadaa !
+    uname -a; node --version; npm --version
+    Linux miraplug001 2.6.32-5-kirkwood #1 Sat Sep 10 09:17:13 UTC 2011 armv5tel GNU/Linux
+    v0.4.12
+    1.0.30
 
 
 Convert internal flash root partition to UBIFS  
