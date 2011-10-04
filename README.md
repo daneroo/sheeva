@@ -55,7 +55,7 @@ We must note the ethaddress because it will be lost by this upgrade:
 
 Use tftp rather than USB for uImage,uInitrd (uBoot, but we already did that)  
 
--start tftp
+-start tftp on OSX
 
     sudo scp u-boot.bin-3.4.19  /private/tftpboot/uboot.bin
     sudo /sbin/service tftp start
@@ -74,7 +74,8 @@ Use tftp rather than USB for uImage,uInitrd (uBoot, but we already did that)
     reset
 
 ## Install a new Kernel into Flash
-*Will redo this with 2.6.32.5 to match the version installed with debian installer*
+*Will redo this with 2.6.32.5 to match the version installed with debian installer*  
+
 Get a kernel from sheeva.with-linux.com.
 
     wget http://sheeva.with-linux.com/sheeva/2.6/2.6.32/2.6.32.45/sheeva-2.6.32.45-uImage
@@ -103,7 +104,7 @@ I choose stable images (as opposed to dailys).
     sudo scp uImage uInitrd  /private/tftpboot
 
 *Install with console on goedel, cause I get garbled text from dirac (in the debian installer)!?*  
-*`export LANG=C` got me the first screen of the installer but garbled again...
+*`export LANG=C` got me the first screen of the installer but garbled again...*
 
     setenv ipaddr 192.168.3.250
     setenv serverip 192.168.3.140
@@ -112,11 +113,12 @@ I choose stable images (as opposed to dailys).
     setenv bootargs console=ttyS0,115200 base-installer/initramfs-tools/driver-policy=most
     bootm 0x0400000 0x0800000
     
-I didn't cathc the debian installer option to skip the kernel installation, so we do have a kernel in a boot partition
+I didn't catch the debian installer option to skip the kernel installation, so we do have a kernel in a boot partition
 
 ## Boot from MMC (similar for USB)
-Just a test. 
-Don't save the setting this is just to confirm that we can boot from the kernel installed on the sd/mmc card.
+Just a test. Don't save the settings.
+
+This is just to confirm that we can boot from the kernel installed on the sd/mmc card.
 There was a typo in the instructions: `mmc init` -> `mmcinit`.
 This works and is confirmed with `uname` reporting `Linux miraplug001 2.6.32-5-kirkwood` which is the kernel installed into mmc:/boot by the debian installer.
 
@@ -232,94 +234,16 @@ Remember /dev/mmcblk0p1 was /boot, /dev/mmcblk0p2 was /.
     curl http://npmjs.org/install.sh | sh
 
 # Tadaa !
+This is what I got after firt install from USB.
+
     uname -a; node --version; npm --version
     Linux miraplug001 2.6.32-5-kirkwood #1 Sat Sep 10 09:17:13 UTC 2011 armv5tel GNU/Linux
     v0.4.12
     1.0.30
 
+This is what I have now running from flass-nand.
 
-Convert internal flash root partition to UBIFS  
-http://plugcomputer.org/plugwiki/index.php/Installing_Debian_To_Flash
-
-Hint for ubifs boot loading:  
-http://www.plugcomputer.org/plugforum/index.php?topic=5894.0
-
-Now that we have booted from USB rootfs (and installed node!), we want to burn the USB fs onto the internal flash:
-
-apt-get install mtd-utils
-
-ubiformat /dev/mtd2 -s 512
-ubiattach /dev/ubi_ctrl -m 2
-
-ubimkvol /dev/ubi0 -N rootfs -m
-mount -t ubifs ubi0:rootfs /mnt
-
-
-Stop - rootfs not big enough! -OR- maybe it is with compression
-root@miraplug001:/# df -h / /boot
-Filesystem            Size  Used Avail Use% Mounted on
-/dev/sda2             6.8G  788M  5.7G  12% /
-/dev/sda1             228M   15M  202M   7% /boot
-root@miraplug001:/# df -h /mnt/
-Filesystem            Size  Used Avail Use% Mounted on
-ubi0:rootfs           462M   16K  458M   1% /mnt
-
-cleanup - need 326M (before compression)
-/var/cache/apt: 51M
-/root: 102M
-/usr/share/locale 65M
-
-rm -rf /root/node-source /root/ax-dn : 690M left on /
-# apt-get install localepurge : no effect, remove
-
-apt-get clean: 667M left
-
-GO, try copying, see what compression does:
-mkdir /tmp/rootfs
-mount -o bind / /tmp/rootfs/
-cd /tmp/rootfs
-sync
-
-cp -a . /mnt/
-whoa: compression helps!
-root@miraplug001:/tmp/rootfs# df -h /mnt
-Filesystem            Size  Used Avail Use% Mounted on
-ubi0:rootfs           462M  295M  163M  65% /mnt
-
-Fix fstab, or forever suffer the ignominy of a failed mount:
-cat <<EOF > /mnt/etc/fstab
-/dev/root  /               ubifs   defaults,noatime,rw                      0 0
-tmpfs      /var/run        tmpfs   size=1M,rw,nosuid,mode=0755              0 0
-tmpfs      /var/lock       tmpfs   size=1M,rw,noexec,nosuid,nodev,mode=1777 0 0
-tmpfs      /tmp            tmpfs   defaults,nosuid,nodev                    0 0
-EOF
-
-shutdown -r now # cross fingers... nah, it'll work, what could go wrong?
-
-# following is on one line
-setenv bootargs 'console=ttyS0,115200 ubi.mtd=2 root=ubi0:rootfs rootfstype=ubifs'
-
-saveenv
-reset
-
-Now we have booted with rootfs on flash, but kernel is still on usb.
-bootcmd ....
-
-update kernel ??
-wget http://sheeva.with-linux.com/sheeva/README-PLUG-UPDATE.sh
-
-bash ./README-PLUG-UPDATE.sh  --nandkernel
-bash ./README-PLUG-UPDATE.sh  2.6.32 --nandkernel
-
-Hmm how dowe boot from nand/ ubifs ? Hints here ?
-  http://www.plugcomputer.org/plugforum/index.php?topic=5894.0
-
-#WIP::::::    do this once
-setenv bootargs 'console=ttyS0,115200 mtdparts=orion_nand:512k(uboot),4m@1m(kernel),507m@5m(rootfs) rw';
-
-
-setenv bootcmd 'setenv bootargs $(bootargs_console); run bootcmd_usb; bootm 0x00800000 0x01100000'
-
-
-
--=-=-= Try re-install with mmc/sd
+    root@miraplug001:/mnt/home/daniel# uname -a; node --version; npm --version
+    Linux miraplug001 2.6.32.5 #1 PREEMPT Sat Jan 23 04:10:40 MST 2010 armv5tel GNU/Linux
+    v0.4.12
+    1.0.93
