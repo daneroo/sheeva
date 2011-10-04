@@ -6,41 +6,54 @@ Required (uBoot,uImage,etc..) files are .gitignored in the checkout repo on dira
 
 _objective_: try to install node.js + couchdb
 
-*Jaunty is end-of-life: gonna re-install debian*
+*Jaunty (the original distributed OS) is end-of-life: gonna re-install debian*
+## References
+* [Plug Computer Community site](http://plugcomputer.org/)
+* [Plug Computer Community Wiki](http://plugcomputer.org/plugwiki/index.php?title=Main_Page)
+* [Intall uBoot](http://www.cyrius.com/debian/kirkwood/sheevaplug/uboot-upgrade.html)
+* [FTDI Drivers OSX](http://www.plugcomputer.org/plugwiki/index.php/Serial_terminal_program)
+* [Debian install to USB of SD/MMC](http://www.cyrius.com/debian/kirkwood/sheevaplug/install.html)
+
 
 ## Serial console acces (From dirac)
+Talking to the sheevaplug, especially to interact with the boot manager requires serial access through the miniusb port.
 
-Download FTDI Driver from : http://www.ftdichip.com/Drivers/VCP.htm
-  -ref from http://www.plugcomputer.org/plugwiki/index.php/Serial_terminal_program
+### OSX Driver
+Download FTDI Driver from : http://www.ftdichip.com/Drivers/VCP.htm  
+`ref` from http://www.plugcomputer.org/plugwiki/index.php/Serial_terminal_program
 
-Patch /System/Library/Extensions/FTDIUSBSerialDriver.kext/Contents/Info.plist
-make sure perms are correct.
-chown root.wheel /System/Library/Extensions/FTDIUSBSerialDriver.kext/Contents/Info.plist
--- to test, you can see if line below complains
-sudo kextload /System/Library/Extensions/FTDIUSBSerialDriver.kext
+        Patch /System/Library/Extensions/FTDIUSBSerialDriver.kext/Contents/Info.plist
+        make sure perms are correct.
+        chown root.wheel /System/Library/Extensions/FTDIUSBSerialDriver.kext/Contents/Info.plist
+        ## to test, you can see if line below complains
+        sudo kextload /System/Library/Extensions/FTDIUSBSerialDriver.kext
 
 Talk to serial port with:
 
 -dirac:
-  screen /dev/tty.usbserial-00002006B 115200
-  ctrl-a k to kiill screen session
+
+    screen /dev/tty.usbserial-00002006B 115200
+    ctrl-a k to kiill screen session
+
 -goedel:
-  screen /dev/ttyUSB2 115200
-  screen /dev/ttyUSB1 115200
-  ctrl-a k to kiill screen session
 
+    screen /dev/ttyUSB2 115200
+    screen /dev/ttyUSB1 115200
+    ctrl-a k to kiill screen session
 
-## Uboot Needds an upgrade
-We must note the ethaddress because it will be lost by this upgrade:
+# Low level Install (uBoot, Debian installer)
+When we moved from the included Jaunty ubuntu distro to standard (maintained) debian, we had to install a new boot manager (uBoot)
+
+## Uboot Needs an upgrade
+We must note the ethaddress because it will be lost by this upgrade:  
   http://www.cyrius.com/debian/kirkwood/sheevaplug/uboot-upgrade.html
 
-U-Boot 1.1.4 (Mar 19 2009 - 16:06:59) Marvell version: 3.4.16
-Marvell>> version
-U-Boot 1.1.4 (Mar 19 2009 - 16:06:59) Marvell version: 3.4.16
-Marvell>> print ethaddr
-ethaddr=00:50:43:01:D1:DB
+    Marvell>> version
+    U-Boot 1.1.4 (Mar 19 2009 - 16:06:59) Marvell version: 3.4.16
+    Marvell>> print ethaddr
+    ethaddr=00:50:43:01:D1:DB
 
-Use tftp raher that USB for uImage,uInitrd (uBoot, but we already did that)
+Use tftp raher that USB for uImage,uInitrd (uBoot, but we already did that)  
   OS X: sudo /sbin/service tftp start (put files in /private/tftpboot/)
 
 **Install with console on goedel, cause I get garbled text from dirac (in the debian installer)!?
@@ -51,7 +64,7 @@ http://www.cyrius.com/debian/kirkwood/sheevaplug/install.html
 -- will try this later see below:
 http://plugcomputer.org/plugwiki/index.php/Installing_Debian_To_Flash
 
-## Install node:
+## Install `node.js`:
 apt-get update
 apt-get install scons make build-essential libssl-dev curl
 cd /root/node-source
@@ -66,7 +79,7 @@ nano +139 deps/v8/SConstruct
 make
 make install
 
-## Install npm
+## Install `npm`
 apt-get install curl
 curl http://npmjs.org/install.sh | sh
 
