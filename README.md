@@ -247,3 +247,11 @@ This is what I have now running from flass-nand.
     Linux miraplug001 2.6.32.5 #1 PREEMPT Sat Jan 23 04:10:40 MST 2010 armv5tel GNU/Linux
     v0.4.12
     1.0.93
+
+Final Disk Usage:
+
+    root@miraplug001:/mnt/home/daniel# df -h
+    Filesystem            Size  Used Avail Use% Mounted on
+    rootfs                462M  327M  131M  72% /
+    ubi0:rootfs           462M  327M  131M  72% /
+    /dev/mmcblk0p2        1.6G  564M  948M  38% /mnt
